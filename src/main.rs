@@ -25,6 +25,7 @@ fn main() {
                         "false",
                         "Segmentation fault (core dumped)",
                         "not a segmentation fault probably idk not sure tbh just try again i guess",
+                        "busted all over the place"
                     ];
                     panic!("{}", stuf[rand::thread_rng().gen_range(0..stuf.len())]);
                 }
