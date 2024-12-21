@@ -1,0 +1,5 @@
+runnable function amogus {
+    stuff;
+    "totally normal string with nothing wrong"
+    {}
+}
