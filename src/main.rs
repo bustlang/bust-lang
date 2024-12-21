@@ -33,8 +33,7 @@ fn main() {
                     write_volatile(&mut pointer_to_protected_memory, 0 as u32);
                 },
             }
-        })
-        .unwrap();
+        }).unwrap();
     let file = File::open("main.bs").unwrap();
     let lexed_stuf = lexer::start_lexing(file);
     println!("Lexed JSON: {}", lexed_stuf.to_string());
