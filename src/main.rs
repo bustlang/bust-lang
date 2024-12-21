@@ -25,7 +25,9 @@ fn main() {
                         "false",
                         "Segmentation fault (core dumped)",
                         "not a segmentation fault probably idk not sure tbh just try again i guess",
-                        "busted all over the place"
+                        "busted all over the place",
+                        "error: code is not YASSSSS enough, please try again later.",
+                        "error: 404 chatgpt-api not found"
                     ];
                     panic!("{}", stuf[rand::thread_rng().gen_range(0..stuf.len())]);
                 }
