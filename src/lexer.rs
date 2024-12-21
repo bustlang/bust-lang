@@ -90,3 +90,17 @@ fn shout_to_json(_shout: String) -> serde_json::Value {
     // If a unknown thing was encountered, just return a empty json object
     return serde_json::json!({});
 }
+/*
+fn function_body_to_json(_body: String) -> Value {
+    // Clone body to be able to modify it
+    let mut body = _body.clone();
+    // Remove {} because why not :trol: (please help me im going insane)
+    body = body.strip_prefix("{").unwrap().to_string();
+    body = body.strip_suffix("}").unwrap().to_string();
+    // Get next shout and umm ... remove it from the original body i guess
+    let next_shout = get_next_shout(body);
+    body = body.strip_prefix(next_shout).unwrap().to_string();
+
+    return json!({});
+}
+    */
