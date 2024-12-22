@@ -1,106 +1,203 @@
-use serde_json::json;
-use std::{fs::File, io::Read};
+use crate::errors::fatal;
+use serde_json::{json, Value};
 
-/// This will "convert" the raw file into a json that can then be interpreted
-pub fn start_lexing(mut file: File) -> serde_json::Value {
-    // First, make a string where the file contents will be stored
-    let mut file_contents = String::new();
-    // Then, read the file! This is ignoring errors at the moment.
-    file.read_to_string(&mut file_contents).unwrap();
-
-    let ret_json = serde_json::json!({"code": [
-        shout_to_json((|| {
-            let next = get_next_shout(file_contents);
-            // This is really just for debugging, should be removed later
-            println!("Next shout: {next}");
-            return next;
-        })())
-    ]});
-
-    // Finally, return the json
-    return ret_json;
+#[derive(Debug)]
+pub enum TokenType {
+    Unknown,
+    FunctionDeclaration,
+    DebugStatement,
 }
 
-/// Will get everything until a dot, it will also respect brackets, but not strings or anything like that yet
-/// A "shout" is basically just a _thing_ that will be executed and may or may not have a return value. Don't question the name
-fn get_next_shout(code: String) -> String {
-    let mut shout = String::new();
-    // Bracket counter is used for keeping track of how many brackets were opened/closed to know when a semicolon is actually "valid"
+#[derive(Debug)]
+pub struct Token {
+    pub tok_type: TokenType,
+    pub data: Value,
+    pub body: Vec<Token>,
+}/*
+impl std::fmt::Display for Token {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        writeln!(f, "Token Type: {:?}, Data: {}",&self.tok_type, &self.data)?;
+        Ok(())
+    }
+}*/
+
+pub const KEYW_FUNCTION_DECL: &str = "runnable function";
+pub const KEYW_DEBUG: &str = "debug";
+pub const TOK_START_BLOCK: char = '{';
+pub const TOK_END_BLOCK: char = '}';
+pub const TOK_STRING: char = '"';
+pub const TOK_EOS: char = '.';
+
+pub fn tokenize(_code: String) -> Vec<Token> {
+    let mut code = _code.clone();
+    let mut tokens = Vec::new();
+    while !code.is_empty() {
+        tokens.push(tok_next_expr(&mut code));
+    }
+    return tokens;
+}
+
+fn tok_next_expr(code: &mut String) -> Token {
+    let mut tok: Token = Token {
+        tok_type: TokenType::Unknown,
+        data: json!({}),
+        body: Vec::new(),
+    };
+    rem_leading_whitespace(code);
+    if code.starts_with(KEYW_FUNCTION_DECL) {
+        tok = handle_function_decl(code);
+    } else {
+        println!("Code: {code}");
+        fatal("Syntax Error: Unknown keyword (1)");
+    }
+    return tok;
+}
+
+fn handle_function_decl(code: &mut String) -> Token {
+    let mut tok: Token = Token {
+        tok_type: TokenType::FunctionDeclaration,
+        data: json!({}),
+        body: Vec::new(),
+    };
+    *code = code.strip_prefix(KEYW_FUNCTION_DECL).unwrap().to_string();
+    tok.tok_type = TokenType::FunctionDeclaration;
+    rem_leading_whitespace(code);
+    let fun_name = code
+        .chars()
+        .take_while(|&c| c.is_alphanumeric())
+        .collect::<String>(); // Stolen from StackOverflow
+    tok.data = json!({"fun_name": fun_name});
+    *code = code
+        .strip_prefix(fun_name.as_str())
+        .unwrap_or(code)
+        .to_string();
+    rem_leading_whitespace(code);
+    println!("{}", code);
+    if !code.starts_with(TOK_START_BLOCK) {
+        fatal(format!("Syntax Error: Expected '{TOK_START_BLOCK}'").as_str());
+    }
+    tok.body = tokenize_block(get_next_block(code.clone()));
+    println!("Next block: {}", TOK_START_BLOCK.to_string() + get_next_block(code.clone()).as_str() + TOK_END_BLOCK.to_string().as_str());
+    *code = code.strip_prefix((TOK_START_BLOCK.to_string() + get_next_block(code.clone()).as_str() + TOK_END_BLOCK.to_string().as_str()).as_str()).unwrap_or(code).to_string();
+    println!("{code}");
+    return tok;
+}
+
+fn get_next_block(__code: String) -> String {
+    let mut code = __code;
+    let mut _code = String::new();
+    let mut bracket_counter = 0;
+    let mut is_in_string = false;
+    if code.starts_with(TOK_START_BLOCK) {
+        code = code.strip_prefix(TOK_START_BLOCK).unwrap().to_string();
+        bracket_counter += 1;
+    }
+    for c in code.chars() {
+        match c {
+            TOK_START_BLOCK => {
+                if is_in_string {
+                    break;
+                }
+                bracket_counter += 1;
+            }
+            TOK_END_BLOCK => {
+                if is_in_string {
+                    break;
+                }
+                bracket_counter -= 1;
+            }
+            TOK_STRING => {
+                is_in_string = !is_in_string;
+            }
+            _ => {}
+        }
+        if bracket_counter == 0 {
+            break;
+        }
+        _code = _code + c.to_string().as_str();
+    }
+    return _code;
+}
+
+fn tokenize_block(_code: String) -> Vec<Token> {
+    let mut code = _code.clone();
+    let mut tokens: Vec<Token> = Vec::new();
+
+    if code.starts_with(TOK_START_BLOCK) {
+        code = code.strip_prefix(TOK_START_BLOCK).unwrap().to_string();
+    }
+    if code.ends_with(TOK_END_BLOCK) {
+        code = code.strip_suffix(TOK_END_BLOCK).unwrap().to_string();
+    }
+
+    rem_leading_whitespace(&mut code);
+    while !code.is_empty() {
+        if code.starts_with(KEYW_DEBUG) {
+            code = code.strip_prefix(KEYW_DEBUG).unwrap().to_string();
+            rem_leading_whitespace(&mut code);
+            let stuf = get_all_until_eos(&code);
+            code = code.strip_prefix(stuf.as_str()).unwrap().to_string();
+            tokens.push(Token {
+                tok_type: TokenType::DebugStatement,
+                data: json!({"str": stuf.strip_suffix(TOK_EOS).unwrap()}),
+                body: Vec::new(),
+            });
+        }
+        else {
+            println!("code: |{code}|");
+            fatal("Syntax Error: Unknown Keyword (2)");
+        }
+        rem_leading_whitespace(&mut code);
+    }
+
+    return tokens;
+}
+
+/// Will include the eos
+fn get_all_until_eos(code: &String) -> String {
+    let mut ret = String::new();
+
+    let mut is_in_string = false;
     let mut bracket_counter = 0;
     for c in code.chars() {
-        shout = shout + c.to_string().as_str();
+        ret = ret + c.to_string().as_str();
+        match c {
+            TOK_STRING => {
+                is_in_string = !is_in_string;
+            }
+            TOK_START_BLOCK => {
+                if !is_in_string {
+                    bracket_counter += 1;
+                }
+            }
+            TOK_END_BLOCK => {
+                if !is_in_string {
+                    bracket_counter -= 1;
+                }
+            }
+            TOK_EOS => {
+                if !is_in_string && bracket_counter == 0 {
+                    return ret;
+                }
+            }
+            _ => {}
+        }
+    }
+    return ret;
+}
 
-        if c == '.' && bracket_counter == 0 {
+fn rem_leading_whitespace(_str: &mut String) {
+    let mut new_str = _str.clone();
+    for c in _str.chars() {
+        if c.is_whitespace() {
+            new_str = new_str
+                .strip_prefix(c.to_string().as_str())
+                .unwrap_or(new_str.as_str())
+                .to_string();
+        }
+        else {
             break;
-        } else if c == '}' {
-            bracket_counter -= 1;
-        } else if c == '{' {
-            bracket_counter += 1;
         }
     }
-    return shout;
+    *_str = new_str;
 }
-
-/// Converts a single shout (please parse it beforehand if you haven't already) into a json. Pretty WIP atm
-fn shout_to_json(_shout: String) -> serde_json::Value {
-    // Clone it to be able to modify
-    let mut shout = _shout.clone();
-    // The string literal should be replaced by some global constant or something for better code
-    if shout.starts_with("runnable function ") {
-        // Remove the prefix "runnable function ", the next "word" will be the function name (no checking for syntax errors yet though)
-        shout = shout
-            .strip_prefix("runnable function ")
-            .unwrap()
-            .to_string();
-        // Get everything until a space is met, this is really shitty, it should also check for brackets, or generally non-alphanumeric values, but imagine doing that
-        let fun_name = shout
-            .as_str()
-            .chars()
-            .take_while(|&ch| ch != ' ')
-            .collect::<String>(); // Code stolen from StackOverflow obviously
-        // Remove function name from the shout, next thing should be the function body
-        shout = shout.strip_prefix(fun_name.as_str()).unwrap().to_string();
-        // But before we can get the function body, we first gotta remove the weird space, this is also really shitty and needs improving because it only removes ONE space
-        shout = shout.strip_prefix(" ").unwrap().to_string();
-
-        let mut new_shout = String::new();
-        // Used for flipping it every time a " is encountered, so we know when to remove the spaces and when to not remove them, this also probably needs improvements, especially because there might not even exist strings in bust
-        let mut is_in_str: bool = false;
-        for c in shout.chars() {
-            // If char is ' ' space or '\t' tab or basically any whitespace imaginable, and if not in a string, move on with the next iteration
-            if c.is_whitespace() && !is_in_str { continue; }
-            
-            // Append the current char to the new_shout, after much (~20 seconds) of consideration, I've decided that this is the best way to do it
-            new_shout = new_shout + c.to_string().as_str();
-            // If we encountered a " flip the boolean
-            if c == '"' {
-                is_in_str = !is_in_str;
-            }
-        }
-        // Finally, return the json with the type set to "function" and then the data. The data should have more than just "name" and "body", as body should be parsed too by the lexer of course but that will come soon™
-        return json!({
-            "type": "function",
-            "data": {
-                "name": fun_name,
-                "body": new_shout
-            }
-        });
-    }
-
-    // If a unknown thing was encountered, just return a empty json object
-    return serde_json::json!({});
-}
-/*
-fn function_body_to_json(_body: String) -> Value {
-    // Clone body to be able to modify it
-    let mut body = _body.clone();
-    // Remove {} because why not :trol: (please help me im going insane)
-    body = body.strip_prefix("{").unwrap().to_string();
-    body = body.strip_suffix("}").unwrap().to_string();
-    // Get next shout and umm ... remove it from the original body i guess
-    let next_shout = get_next_shout(body);
-    body = body.strip_prefix(next_shout).unwrap().to_string();
-
-    return json!({});
-}
-    */

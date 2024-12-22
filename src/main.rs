@@ -1,12 +1,10 @@
 use rand::Rng;
 use std::{
-    fs::File,
-    ptr::{self, write_volatile},
-    thread,
-    time::Duration,
+    fs::File, io::Read, ptr::{self, write_volatile}, thread, time::Duration
 };
 
 mod lexer;
+mod errors;
 
 fn main() {
     let random_npc_thread = thread::Builder::new()
@@ -37,8 +35,14 @@ fn main() {
                 },
             }
         }).unwrap();
-    let file = File::open("main.bs").unwrap();
-    let lexed_stuf = lexer::start_lexing(file);
-    println!("Lexed JSON: {}", lexed_stuf.to_string());
+    let mut file = File::open("main.bs").unwrap();
+    let mut file_contents = String::new();
+    file.read_to_string(&mut file_contents).unwrap();
+
+    let tokens = lexer::tokenize(file_contents);
+    for token in tokens {
+        println!("tok_type: {:?} | data: {} | body: {:?}", token.tok_type, token.data,token.body);
+    }
+
     let _ = random_npc_thread.join();
 }
