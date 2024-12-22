@@ -13,13 +13,13 @@ pub struct Token {
     pub tok_type: TokenType,
     pub data: Value,
     pub body: Vec<Token>,
-}/*
-impl std::fmt::Display for Token {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        writeln!(f, "Token Type: {:?}, Data: {}",&self.tok_type, &self.data)?;
-        Ok(())
-    }
-}*/
+} /*
+  impl std::fmt::Display for Token {
+      fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+          writeln!(f, "Token Type: {:?}, Data: {}",&self.tok_type, &self.data)?;
+          Ok(())
+      }
+  }*/
 
 pub const KEYW_FUNCTION_DECL: &str = "runnable function";
 pub const KEYW_DEBUG: &str = "debug";
@@ -77,8 +77,21 @@ fn handle_function_decl(code: &mut String) -> Token {
         fatal(format!("Syntax Error: Expected '{TOK_START_BLOCK}'").as_str());
     }
     tok.body = tokenize_block(get_next_block(code.clone()));
-    println!("Next block: {}", TOK_START_BLOCK.to_string() + get_next_block(code.clone()).as_str() + TOK_END_BLOCK.to_string().as_str());
-    *code = code.strip_prefix((TOK_START_BLOCK.to_string() + get_next_block(code.clone()).as_str() + TOK_END_BLOCK.to_string().as_str()).as_str()).unwrap_or(code).to_string();
+    println!(
+        "Next block: {}",
+        TOK_START_BLOCK.to_string()
+            + get_next_block(code.clone()).as_str()
+            + TOK_END_BLOCK.to_string().as_str()
+    );
+    *code = code
+        .strip_prefix(
+            (TOK_START_BLOCK.to_string()
+                + get_next_block(code.clone()).as_str()
+                + TOK_END_BLOCK.to_string().as_str())
+            .as_str(),
+        )
+        .unwrap_or(code)
+        .to_string();
     println!("{code}");
     return tok;
 }
@@ -142,8 +155,7 @@ fn tokenize_block(_code: String) -> Vec<Token> {
                 data: json!({"str": stuf.strip_suffix(TOK_EOS).unwrap()}),
                 body: Vec::new(),
             });
-        }
-        else {
+        } else {
             println!("code: |{code}|");
             fatal("Syntax Error: Unknown Keyword (2)");
         }
@@ -194,8 +206,7 @@ fn rem_leading_whitespace(_str: &mut String) {
                 .strip_prefix(c.to_string().as_str())
                 .unwrap_or(new_str.as_str())
                 .to_string();
-        }
-        else {
+        } else {
             break;
         }
     }
