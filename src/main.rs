@@ -1,9 +1,6 @@
 use std::{
     fs::File,
     io::Read,
-    ptr::{self, write_volatile},
-    thread,
-    time::Duration,
 };
 
 mod errors;
