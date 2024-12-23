@@ -6,6 +6,7 @@ pub enum TokenType {
     Unknown,
     FunctionDeclaration,
     DebugStatement,
+    FunctionInvokation,
 }
 
 #[derive(Debug, Clone)]
@@ -23,6 +24,9 @@ pub struct Token {
 
 pub const KEYW_FUNCTION_DECL: &str = "runnable function";
 pub const KEYW_DEBUG: &str = "debug";
+pub const KEYW_FUNCTION_INVOKATION: &str = "run runnable function";
+pub const TOK_FUNCTION_PARENTHESIES_START: char = '(';
+pub const TOK_FUNCTION_PARENTHESIES_END: char = ')';
 pub const TOK_START_BLOCK: char = '{';
 pub const TOK_END_BLOCK: char = '}';
 pub const TOK_STRING: char = '"';
@@ -47,7 +51,6 @@ fn tok_next_expr(code: &mut String) -> Token {
     if code.starts_with(KEYW_FUNCTION_DECL) {
         tok = handle_function_decl(code);
     } else {
-        println!("Code: {code}");
         fatal("Syntax Error: Unknown keyword (1)");
     }
     return tok;
@@ -72,17 +75,10 @@ fn handle_function_decl(code: &mut String) -> Token {
         .unwrap_or(code)
         .to_string();
     rem_leading_whitespace(code);
-    println!("{}", code);
     if !code.starts_with(TOK_START_BLOCK) {
         fatal(format!("Syntax Error: Expected '{TOK_START_BLOCK}'").as_str());
     }
     tok.body = tokenize_block(get_next_block(code.clone()));
-    println!(
-        "Next block: {}",
-        TOK_START_BLOCK.to_string()
-            + get_next_block(code.clone()).as_str()
-            + TOK_END_BLOCK.to_string().as_str()
-    );
     *code = code
         .strip_prefix(
             (TOK_START_BLOCK.to_string()
@@ -92,7 +88,6 @@ fn handle_function_decl(code: &mut String) -> Token {
         )
         .unwrap_or(code)
         .to_string();
-    println!("{code}");
     return tok;
 }
 
@@ -155,8 +150,31 @@ fn tokenize_block(_code: String) -> Vec<Token> {
                 data: json!({"str": stuf.strip_suffix(TOK_EOS).unwrap()}),
                 body: Vec::new(),
             });
+        } else if code.starts_with(KEYW_FUNCTION_INVOKATION) {
+            code = code
+                .strip_prefix(KEYW_FUNCTION_INVOKATION)
+                .unwrap()
+                .to_string();
+            rem_leading_whitespace(&mut code);
+            let stuf = get_all_until_eos(&code);
+            code = code.strip_prefix(stuf.as_str()).unwrap().to_string();
+            let mut func_name = String::new();
+            for c in stuf.chars() {
+                if !c.is_alphanumeric() && c != TOK_FUNCTION_PARENTHESIES_START {
+                    fatal("Unexpected token");
+                }
+                if c == TOK_FUNCTION_PARENTHESIES_START {
+                    // ignore everything else (for now)
+                    break;
+                }
+                func_name = func_name + c.to_string().as_str();
+            }
+            tokens.push(Token {
+                tok_type: TokenType::FunctionInvokation,
+                data: json!({"fun_name": func_name}),
+                body: Vec::new(),
+            });
         } else {
-            println!("code: |{code}|");
             fatal("Syntax Error: Unknown Keyword (2)");
         }
         rem_leading_whitespace(&mut code);

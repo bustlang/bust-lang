@@ -1,37 +1,14 @@
+
+runnable function func1 {
+    debug is.
+    run runnable function func1().
+}
 runnable function amogus {
     debug say hi.
+    run runnable function func1().
 }
 
 runnable function sus {
     debug amogus.
-}
-runnable function 1 {
-    debug is.
-}
-runnable function 2 {
-    debug so.
-}
-runnable function 3 {
-    debug incredibly.
-}
-runnable function 4 {
-    debug sus, i can't believe it.
-}
-runnable function 5 {
-    debug ngl.
-}
-runnable function 6 {
-    debug this is.
-}
-runnable function 7 {
-    debug so peak.
-}
-runnable function 8 {
-    debug for no.
-}
-runnable function 9 {
-    debug reason.
-}
-runnable function 10 {
-    debug trol.
+    run runnable function amogus().
 }
