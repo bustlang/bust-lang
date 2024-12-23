@@ -1,14 +1,14 @@
 use crate::errors::fatal;
 use serde_json::{json, Value};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum TokenType {
     Unknown,
     FunctionDeclaration,
     DebugStatement,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Token {
     pub tok_type: TokenType,
     pub data: Value,

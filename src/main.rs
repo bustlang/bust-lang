@@ -5,6 +5,7 @@ use std::{
 
 mod errors;
 mod lexer;
+mod interpreter;
 
 fn main() {
     let mut file = File::open("main.bs").unwrap();
@@ -12,10 +13,11 @@ fn main() {
     file.read_to_string(&mut file_contents).unwrap();
 
     let tokens = lexer::tokenize(file_contents);
-    for token in tokens {
+    for token in tokens.clone() {
         println!(
             "tok_type: {:?} | data: {} | body: {:?}",
             token.tok_type, token.data, token.body
         );
     }
+    interpreter::interpret(tokens);
 }
