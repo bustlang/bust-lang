@@ -7,7 +7,7 @@ on:
     branches: [ "*" ]
 
 jobs:
-  build:
+  build-linux:
     runs-on: ubuntu-latest
 
     steps:
@@ -16,4 +16,18 @@ jobs:
       run: cargo build --release
     - uses: actions/upload-artifact@v4
       with:
+        name: linux
         path: target/release/buster
+
+  build-windows:
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Build
+      run: cargo build --release
+    - uses: actions/upload-artifact@v4
+      with:
+        name: linux
+        path: target/release/buster.exe
+    
