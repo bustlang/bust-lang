@@ -1,3 +1,5 @@
 /target
 /testscripts/*
 /.fleet/*
+/.fleet
+/testscripts
