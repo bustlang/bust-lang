@@ -1,13 +1,3 @@
-runnable function func1 {
-    debug is.
-    run runnable function func1().
-}
-runnable function amogus {
-    debug say hi.
-    run runnable function func1().
-}
-
-runnable function sus {
-    debug amogus.
-    run runnable function amogus().
+runnable function main {
+    debug hello world~
 }
