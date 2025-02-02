@@ -2,7 +2,8 @@
     "configurations": [
         {
             "type": "cargo",
-            "name": "Cargo",
+            "name": "Run main.bs for no godddamn reason",
+            "executableArgs": ["main.bs"],
             "cargoArgs": ["run"],
         },
 
