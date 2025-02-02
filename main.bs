@@ -1,4 +1,6 @@
 runnable function main {
-    bool aaa: true~
-    print aaa~
+    bool bool: true~
+    num num: 10.5~
+    print bool~
+    print num~
 }

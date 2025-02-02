@@ -21,7 +21,7 @@ enum VariableValueType {
 struct VariableValue {
     value_type: VariableValueType,
     str_value: String,
-    num_value: i128,
+    num_value: f64,
     bool_value: bool,
     token_vec_value: Vec<Token>,
 }
@@ -67,12 +67,17 @@ fn interpret_token(context: &mut Context, token: Token) {
             println!("{}", token.data["str"])
         }
         TokenType::FunctionDeclaration => {
+            for variable in context.variables.clone() {
+                if variable.value.str_value == token.data["name"].to_string() {
+                    fatal("Names must be unique!");
+                }
+            }
             context.variables.push(Variable {
                 variable_type: VariableType::Function,
                 value: VariableValue {
                     value_type: VariableValueType::Str,
-                    str_value: token.data["fun_name"].to_string(),
-                    num_value: 0,
+                    str_value: token.data["name"].to_string(),
+                    num_value: 0.0,
                     bool_value: false,
                     token_vec_value: token.body.clone(),
                 },
@@ -85,7 +90,7 @@ fn interpret_token(context: &mut Context, token: Token) {
         TokenType::FunctionInvokation => 'fi_block: {
             for variable in context.variables.clone() {
                 if variable.variable_type == VariableType::Function
-                    && variable.value.str_value == token.data["fun_name"].to_string()
+                    && variable.value.str_value == token.data["name"].to_string()
                 {
                     for tok in variable.value.token_vec_value.clone() {
                         interpret_token(context, tok);
@@ -96,10 +101,15 @@ fn interpret_token(context: &mut Context, token: Token) {
             // now, this error isn't actually fatal, but imagine making it easy for the programmer
             fatal(&format!(
                 "Undeclared function \"{}\"",
-                token.data["fun_name"].as_str().unwrap()
+                token.data["name"].as_str().unwrap()
             ));
         }
         TokenType::BooleanDeclaration => {
+            for variable in context.variables.clone() {
+                if variable.value.str_value == token.data["name"].to_string() {
+                    fatal("Names must be unique!");
+                }
+            }
             if token.data["value"].as_str().unwrap() != "true"
                 && token.data["value"].as_str().unwrap() != "false"
             {
@@ -108,10 +118,37 @@ fn interpret_token(context: &mut Context, token: Token) {
             context.variables.push(Variable {
                 variable_type: VariableType::Boolean,
                 value: VariableValue {
-                    value_type: VariableValueType::Str,
+                    value_type: VariableValueType::Boolean,
                     str_value: token.data["name"].to_string(),
-                    num_value: 0,
+                    num_value: 0.0,
                     bool_value: token.data["value"].as_str().unwrap().parse().unwrap(),
+                    token_vec_value: token.body.clone(),
+                },
+            });
+        }
+        TokenType::NumberDeclaration => {
+            for variable in context.variables.clone() {
+                if variable.value.str_value == token.data["name"].to_string() {
+                    fatal("Names must be unique!");
+                }
+            }
+            if token.data["value"]
+                .as_str()
+                .unwrap()
+                .parse::<f64>()
+                .is_err()
+            {
+                fatal(
+                    format!("{} is not a number", token.data["value"].as_str().unwrap()).as_str(),
+                );
+            }
+            context.variables.push(Variable {
+                variable_type: VariableType::Number,
+                value: VariableValue {
+                    value_type: VariableValueType::Number,
+                    str_value: token.data["name"].to_string(),
+                    num_value: token.data["value"].as_str().unwrap().parse().unwrap(),
+                    bool_value: false,
                     token_vec_value: token.body.clone(),
                 },
             });

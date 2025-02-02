@@ -17,11 +17,11 @@ fn main() {
     let tokens = lexer::tokenize(file_contents);
 
     // Uncomment this to see what the tokens look like i guess
-    /*for token in tokens.clone() {
+    for token in tokens.clone() {
         println!(
             "tok_type: {:?} | data: {} | body: {:?}",
             token.tok_type, token.data, token.body
         );
-    }*/
+    }
     interpreter::interpret(tokens);
 }

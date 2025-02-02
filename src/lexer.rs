@@ -6,6 +6,7 @@ pub enum TokenType {
     Unknown,
     FunctionDeclaration,
     BooleanDeclaration,
+    NumberDeclaration,
     DebugStatement,
     PrintStatement,
     FunctionInvokation,
@@ -26,6 +27,7 @@ pub struct Token {
 
 pub const KEYW_FUNCTION_DECL: &str = "runnable function";
 pub const KEYW_BOOL_DECL: &str = "bool";
+pub const KEYW_NUM_DECL: &str = "num";
 pub const KEYW_DEBUG: &str = "debug";
 pub const KEYW_PRINT: &str = "print";
 pub const KEYW_FUNCTION_INVOKATION: &str = "run runnable function";
@@ -70,13 +72,13 @@ fn handle_function_decl(code: &mut String) -> Token {
     *code = code.strip_prefix(KEYW_FUNCTION_DECL).unwrap().to_string();
     tok.tok_type = TokenType::FunctionDeclaration;
     rem_leading_whitespace(code);
-    let fun_name = code
+    let name = code
         .chars()
         .take_while(|&c| c.is_alphanumeric())
         .collect::<String>(); // Stolen from StackOverflow
-    tok.data = json!({"fun_name": fun_name});
+    tok.data = json!({"name": name});
     *code = code
-        .strip_prefix(fun_name.as_str())
+        .strip_prefix(name.as_str())
         .unwrap_or(code)
         .to_string();
     rem_leading_whitespace(code);
@@ -186,7 +188,7 @@ fn tokenize_block(_code: String) -> Vec<Token> {
             }
             tokens.push(Token {
                 tok_type: TokenType::FunctionInvokation,
-                data: json!({"fun_name": func_name}),
+                data: json!({"name": func_name}),
                 body: Vec::new(),
             });
         } else if code.starts_with(KEYW_BOOL_DECL) {
@@ -198,6 +200,18 @@ fn tokenize_block(_code: String) -> Vec<Token> {
             code = code.strip_prefix(stuf.as_str()).unwrap().to_string();
             tokens.push(Token {
                 tok_type: TokenType::BooleanDeclaration,
+                data: json!({"name": stuf.strip_suffix(TOK_EOS).unwrap().split(TOK_VALUE).nth(0).unwrap().to_string(), "value": morestuf.strip_suffix(TOK_EOS).unwrap().to_string()}),
+                body: Vec::new(),
+            });
+        } else if code.starts_with(KEYW_NUM_DECL) {
+            code = code.strip_prefix(KEYW_NUM_DECL).unwrap().to_string();
+            rem_leading_whitespace(&mut code);
+            let stuf = get_all_until_eos(&code);
+            let mut morestuf = stuf.split(':').nth(1).unwrap().to_string();
+            rem_leading_whitespace(&mut morestuf);
+            code = code.strip_prefix(stuf.as_str()).unwrap().to_string();
+            tokens.push(Token {
+                tok_type: TokenType::NumberDeclaration,
                 data: json!({"name": stuf.strip_suffix(TOK_EOS).unwrap().split(TOK_VALUE).nth(0).unwrap().to_string(), "value": morestuf.strip_suffix(TOK_EOS).unwrap().to_string()}),
                 body: Vec::new(),
             });
