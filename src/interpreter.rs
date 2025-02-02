@@ -52,10 +52,14 @@ fn interpret_token(context: &mut Context, token: Token) {
         TokenType::DebugStatement => println!("[Debug] {}", token.data["str"]),
         TokenType::PrintStatement => 'ps_block: {
             for variable in context.variables.clone() {
-                if variable.variable_type == VariableType::Boolean && variable.value.str_value == token.data["str"].to_string() {
+                if variable.variable_type == VariableType::Boolean
+                    && variable.value.str_value == token.data["str"].to_string()
+                {
                     println!("{}", variable.value.bool_value);
                     break 'ps_block;
-                } else if variable.variable_type == VariableType::Number && variable.value.str_value == token.data["str"].to_string() {
+                } else if variable.variable_type == VariableType::Number
+                    && variable.value.str_value == token.data["str"].to_string()
+                {
                     println!("{}", variable.value.num_value);
                     break 'ps_block;
                 }
@@ -96,7 +100,9 @@ fn interpret_token(context: &mut Context, token: Token) {
             ));
         }
         TokenType::BooleanDeclaration => {
-            if token.data["value"].as_str().unwrap() != "true" && token.data["value"].as_str().unwrap() != "false"{
+            if token.data["value"].as_str().unwrap() != "true"
+                && token.data["value"].as_str().unwrap() != "false"
+            {
                 fatal("Booleans must be either true or false");
             }
             context.variables.push(Variable {
@@ -107,7 +113,7 @@ fn interpret_token(context: &mut Context, token: Token) {
                     num_value: 0,
                     bool_value: token.data["value"].as_str().unwrap().parse().unwrap(),
                     token_vec_value: token.body.clone(),
-                }
+                },
             });
         }
         _ => fatal("Unknown Token Type (how did this even happen)"),

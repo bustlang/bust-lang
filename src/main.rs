@@ -1,13 +1,8 @@
-use std::{
-    fs::File,
-    io::Read,
-};
+use std::{fs::File, io::Read};
 
 mod errors;
-mod lexer;
 mod interpreter;
-
-
+mod lexer;
 
 fn main() {
     let args: Vec<String> = std::env::args().collect();
