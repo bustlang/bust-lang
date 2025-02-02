@@ -118,9 +118,6 @@ fn get_next_block(__code: String) -> String {
                 }
                 bracket_counter -= 1;
             }
-            TOK_STRING => {
-                is_in_string = !is_in_string;
-            }
             _ => {}
         }
         if bracket_counter == 0 {
