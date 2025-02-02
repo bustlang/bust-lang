@@ -3,4 +3,5 @@ runnable function main {
     num num: 10.5~
     print bool~
     print num~
+    debug str~
 }

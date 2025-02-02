@@ -77,10 +77,7 @@ fn handle_function_decl(code: &mut String) -> Token {
         .take_while(|&c| c.is_alphanumeric())
         .collect::<String>(); // Stolen from StackOverflow
     tok.data = json!({"name": name});
-    *code = code
-        .strip_prefix(name.as_str())
-        .unwrap_or(code)
-        .to_string();
+    *code = code.strip_prefix(name.as_str()).unwrap_or(code).to_string();
     rem_leading_whitespace(code);
     if !code.starts_with(TOK_START_BLOCK) {
         fatal(format!("Syntax Error: Expected '{TOK_START_BLOCK}'").as_str());
@@ -228,26 +225,18 @@ fn tokenize_block(_code: String) -> Vec<Token> {
 fn get_all_until_eos(code: &String) -> String {
     let mut ret = String::new();
 
-    let mut is_in_string = false;
     let mut bracket_counter = 0;
     for c in code.chars() {
         ret = ret + c.to_string().as_str();
         match c {
-            TOK_STRING => {
-                is_in_string = !is_in_string;
-            }
             TOK_START_BLOCK => {
-                if !is_in_string {
-                    bracket_counter += 1;
-                }
+                bracket_counter += 1;
             }
             TOK_END_BLOCK => {
-                if !is_in_string {
-                    bracket_counter -= 1;
-                }
+                bracket_counter -= 1;
             }
             TOK_EOS => {
-                if !is_in_string && bracket_counter == 0 {
+                if bracket_counter == 0 {
                     return ret;
                 }
             }
