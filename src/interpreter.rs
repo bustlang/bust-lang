@@ -10,16 +10,7 @@ enum VariableType {
 }
 
 #[derive(Clone, Debug)]
-enum VariableValueType {
-    Str,
-    Number,
-    Boolean,
-    TokenVec,
-}
-
-#[derive(Clone, Debug)]
 struct VariableValue {
-    value_type: VariableValueType,
     str_value: String,
     num_value: f64,
     bool_value: bool,
@@ -75,7 +66,6 @@ fn interpret_token(context: &mut Context, token: Token) {
             context.variables.push(Variable {
                 variable_type: VariableType::Function,
                 value: VariableValue {
-                    value_type: VariableValueType::Str,
                     str_value: token.data["name"].to_string(),
                     num_value: 0.0,
                     bool_value: false,
@@ -118,7 +108,6 @@ fn interpret_token(context: &mut Context, token: Token) {
             context.variables.push(Variable {
                 variable_type: VariableType::Boolean,
                 value: VariableValue {
-                    value_type: VariableValueType::Boolean,
                     str_value: token.data["name"].to_string(),
                     num_value: 0.0,
                     bool_value: token.data["value"].as_str().unwrap().parse().unwrap(),
@@ -145,7 +134,6 @@ fn interpret_token(context: &mut Context, token: Token) {
             context.variables.push(Variable {
                 variable_type: VariableType::Number,
                 value: VariableValue {
-                    value_type: VariableValueType::Number,
                     str_value: token.data["name"].to_string(),
                     num_value: token.data["value"].as_str().unwrap().parse().unwrap(),
                     bool_value: false,
