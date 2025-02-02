@@ -5,6 +5,7 @@ use serde_json::{json, Value};
 pub enum TokenType {
     Unknown,
     FunctionDeclaration,
+    BooleanDeclaration,
     DebugStatement,
     FunctionInvokation,
 }
@@ -23,6 +24,7 @@ pub struct Token {
   }*/
 
 pub const KEYW_FUNCTION_DECL: &str = "runnable function";
+pub const KEYW_BOOL_DECL: &str = "bool";
 pub const KEYW_DEBUG: &str = "debug";
 pub const KEYW_FUNCTION_INVOKATION: &str = "run runnable function";
 pub const TOK_FUNCTION_PARENTHESIES_START: char = '(';
@@ -172,6 +174,16 @@ fn tokenize_block(_code: String) -> Vec<Token> {
             tokens.push(Token {
                 tok_type: TokenType::FunctionInvokation,
                 data: json!({"fun_name": func_name}),
+                body: Vec::new(),
+            });
+        } else if code.starts_with(KEYW_BOOL_DECL) {
+            code = code.strip_prefix(KEYW_BOOL_DECL).unwrap().to_string();
+            rem_leading_whitespace(&mut code);
+            let stuf = get_all_until_eos(&code);
+            code = code.strip_prefix(stuf.as_str()).unwrap().to_string();
+            tokens.push(Token {
+                tok_type: TokenType::BooleanDeclaration,
+                data: json!({"name": stuf.strip_suffix(TOK_EOS).unwrap()}),
                 body: Vec::new(),
             });
         } else {

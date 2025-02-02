@@ -83,6 +83,18 @@ fn interpret_token(context: &mut Context, token: Token) {
                 token.data["fun_name"].as_str().unwrap()
             ));
         }
+        TokenType::BooleanDeclaration => {
+            context.variables.push(Variable {
+                variable_type: VariableType::Boolean,
+                value: VariableValue {
+                    value_type: VariableValueType::Str,
+                    str_value: token.data["name"].to_string(),
+                    num_value: 0,
+                    bool_value: false,
+                    token_vec_value: token.body.clone(),
+                }
+            });
+        }
         _ => fatal("Unknown Token Type (how did this even happen)"),
     }
 }
