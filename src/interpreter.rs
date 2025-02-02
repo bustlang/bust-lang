@@ -96,13 +96,16 @@ fn interpret_token(context: &mut Context, token: Token) {
             ));
         }
         TokenType::BooleanDeclaration => {
+            if token.data["value"].as_str().unwrap() != "true" && token.data["value"].as_str().unwrap() != "false"{
+                fatal("Booleans must be either true or false");
+            }
             context.variables.push(Variable {
                 variable_type: VariableType::Boolean,
                 value: VariableValue {
                     value_type: VariableValueType::Str,
                     str_value: token.data["name"].to_string(),
                     num_value: 0,
-                    bool_value: false,
+                    bool_value: token.data["value"].as_str().unwrap().parse().unwrap(),
                     token_vec_value: token.body.clone(),
                 }
             });

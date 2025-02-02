@@ -35,6 +35,7 @@ pub const TOK_START_BLOCK: char = '{';
 pub const TOK_END_BLOCK: char = '}';
 pub const TOK_STRING: char = '"';
 pub const TOK_EOS: char = '~';
+pub const TOK_VALUE: char = ':';
 
 pub fn tokenize(_code: String) -> Vec<Token> {
     let mut code = _code.clone();
@@ -192,10 +193,12 @@ fn tokenize_block(_code: String) -> Vec<Token> {
             code = code.strip_prefix(KEYW_BOOL_DECL).unwrap().to_string();
             rem_leading_whitespace(&mut code);
             let stuf = get_all_until_eos(&code);
+            let mut morestuf = stuf.split(':').nth(1).unwrap().to_string();
+            rem_leading_whitespace(&mut morestuf);
             code = code.strip_prefix(stuf.as_str()).unwrap().to_string();
             tokens.push(Token {
                 tok_type: TokenType::BooleanDeclaration,
-                data: json!({"name": stuf.strip_suffix(TOK_EOS).unwrap()}),
+                data: json!({"name": stuf.strip_suffix(TOK_EOS).unwrap().split(TOK_VALUE).nth(0).unwrap().to_string(), "value": morestuf.strip_suffix(TOK_EOS).unwrap().to_string()}),
                 body: Vec::new(),
             });
         } else {
