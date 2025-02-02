@@ -1,0 +1,4 @@
+runnable function main {
+    bool aaa: true~
+    print aaa~
+}
