@@ -7,7 +7,10 @@ mod errors;
 mod lexer;
 mod interpreter;
 
+
+
 fn main() {
+    // TODO: Allow people to run any file (yes i understand that bust needs to make people go insane lol)
     let mut file = File::open("main.bs").unwrap();
     let mut file_contents = String::new();
     file.read_to_string(&mut file_contents).unwrap();
