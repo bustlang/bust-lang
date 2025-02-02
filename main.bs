@@ -1,4 +1,3 @@
-
 runnable function func1 {
     debug is.
     run runnable function func1().

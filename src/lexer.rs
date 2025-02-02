@@ -30,7 +30,7 @@ pub const TOK_FUNCTION_PARENTHESIES_END: char = ')';
 pub const TOK_START_BLOCK: char = '{';
 pub const TOK_END_BLOCK: char = '}';
 pub const TOK_STRING: char = '"';
-pub const TOK_EOS: char = '.';
+pub const TOK_EOS: char = '~';
 
 pub fn tokenize(_code: String) -> Vec<Token> {
     let mut code = _code.clone();
