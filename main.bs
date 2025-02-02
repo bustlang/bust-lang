@@ -1,4 +1,5 @@
 runnable function main {
     debug hello world~
     bool aaa~
+    print aaa~
 }

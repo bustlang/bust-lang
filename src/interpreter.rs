@@ -50,6 +50,18 @@ pub fn interpret(tokens: Vec<Token>) {
 fn interpret_token(context: &mut Context, token: Token) {
     match token.tok_type {
         TokenType::DebugStatement => println!("[Debug] {}", token.data["str"]),
+        TokenType::PrintStatement => 'ps_block: {
+            for variable in context.variables.clone() {
+                if variable.variable_type == VariableType::Boolean && variable.value.str_value == token.data["str"].to_string() {
+                    println!("{}", variable.value.bool_value);
+                    break 'ps_block;
+                } else if variable.variable_type == VariableType::Number && variable.value.str_value == token.data["str"].to_string() {
+                    println!("{}", variable.value.num_value);
+                    break 'ps_block;
+                }
+            }
+            println!("{}", token.data["str"])
+        }
         TokenType::FunctionDeclaration => {
             context.variables.push(Variable {
                 variable_type: VariableType::Function,

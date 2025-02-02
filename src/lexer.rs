@@ -7,6 +7,7 @@ pub enum TokenType {
     FunctionDeclaration,
     BooleanDeclaration,
     DebugStatement,
+    PrintStatement,
     FunctionInvokation,
 }
 
@@ -26,6 +27,7 @@ pub struct Token {
 pub const KEYW_FUNCTION_DECL: &str = "runnable function";
 pub const KEYW_BOOL_DECL: &str = "bool";
 pub const KEYW_DEBUG: &str = "debug";
+pub const KEYW_PRINT: &str = "print";
 pub const KEYW_FUNCTION_INVOKATION: &str = "run runnable function";
 pub const TOK_FUNCTION_PARENTHESIES_START: char = '(';
 pub const TOK_FUNCTION_PARENTHESIES_END: char = ')';
@@ -149,6 +151,16 @@ fn tokenize_block(_code: String) -> Vec<Token> {
             code = code.strip_prefix(stuf.as_str()).unwrap().to_string();
             tokens.push(Token {
                 tok_type: TokenType::DebugStatement,
+                data: json!({"str": stuf.strip_suffix(TOK_EOS).unwrap()}),
+                body: Vec::new(),
+            });
+        } else if code.starts_with(KEYW_PRINT) {
+            code = code.strip_prefix(KEYW_PRINT).unwrap().to_string();
+            rem_leading_whitespace(&mut code);
+            let stuf = get_all_until_eos(&code);
+            code = code.strip_prefix(stuf.as_str()).unwrap().to_string();
+            tokens.push(Token {
+                tok_type: TokenType::PrintStatement,
                 data: json!({"str": stuf.strip_suffix(TOK_EOS).unwrap()}),
                 body: Vec::new(),
             });
