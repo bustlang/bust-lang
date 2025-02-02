@@ -25,7 +25,6 @@ pub struct Token {
 pub const KEYW_FUNCTION_DECL: &str = "runnable function";
 pub const KEYW_DEBUG: &str = "debug";
 pub const KEYW_FUNCTION_INVOKATION: &str = "run runnable function";
-// token stuff (idk what all of that means)
 pub const TOK_FUNCTION_PARENTHESIES_START: char = '(';
 pub const TOK_FUNCTION_PARENTHESIES_END: char = ')';
 pub const TOK_START_BLOCK: char = '{';
