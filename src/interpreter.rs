@@ -7,10 +7,12 @@ enum VariableType {
     Number,
     Boolean,
     Function,
+    String,
 }
 
 #[derive(Clone, Debug)]
 struct VariableValue {
+    name: String,
     str_value: String,
     num_value: f64,
     bool_value: bool,
@@ -44,14 +46,19 @@ fn interpret_token(context: &mut Context, token: Token) {
         TokenType::PrintStatement => 'ps_block: {
             for variable in context.variables.clone() {
                 if variable.variable_type == VariableType::Boolean
-                    && variable.value.str_value == token.data["str"].to_string()
+                    && variable.value.name == token.data["str"].to_string()
                 {
                     println!("{}", variable.value.bool_value);
                     break 'ps_block;
                 } else if variable.variable_type == VariableType::Number
-                    && variable.value.str_value == token.data["str"].to_string()
+                    && variable.value.name == token.data["str"].to_string()
                 {
                     println!("{}", variable.value.num_value);
+                    break 'ps_block;
+                } else if variable.variable_type == VariableType::String
+                    && variable.value.name == token.data["str"].to_string()
+                {
+                    println!("{}", variable.value.str_value);
                     break 'ps_block;
                 }
             }
@@ -59,14 +66,15 @@ fn interpret_token(context: &mut Context, token: Token) {
         }
         TokenType::FunctionDeclaration => {
             for variable in context.variables.clone() {
-                if variable.value.str_value == token.data["name"].to_string() {
+                if variable.value.name == token.data["name"].to_string() {
                     fatal("Names must be unique!");
                 }
             }
             context.variables.push(Variable {
                 variable_type: VariableType::Function,
                 value: VariableValue {
-                    str_value: token.data["name"].to_string(),
+                    name: token.data["name"].to_string(),
+                    str_value: String::new(),
                     num_value: 0.0,
                     bool_value: false,
                     token_vec_value: token.body.clone(),
@@ -80,7 +88,7 @@ fn interpret_token(context: &mut Context, token: Token) {
         TokenType::FunctionInvokation => 'fi_block: {
             for variable in context.variables.clone() {
                 if variable.variable_type == VariableType::Function
-                    && variable.value.str_value == token.data["name"].to_string()
+                    && variable.value.name == token.data["name"].to_string()
                 {
                     for tok in variable.value.token_vec_value.clone() {
                         interpret_token(context, tok);
@@ -96,7 +104,7 @@ fn interpret_token(context: &mut Context, token: Token) {
         }
         TokenType::BooleanDeclaration => {
             for variable in context.variables.clone() {
-                if variable.value.str_value == token.data["name"].to_string() {
+                if variable.value.name == token.data["name"].to_string() {
                     fatal("Names must be unique!");
                 }
             }
@@ -108,7 +116,8 @@ fn interpret_token(context: &mut Context, token: Token) {
             context.variables.push(Variable {
                 variable_type: VariableType::Boolean,
                 value: VariableValue {
-                    str_value: token.data["name"].to_string(),
+                    name: token.data["name"].to_string(),
+                    str_value: String::new(),
                     num_value: 0.0,
                     bool_value: token.data["value"].as_str().unwrap().parse().unwrap(),
                     token_vec_value: token.body.clone(),
@@ -117,7 +126,7 @@ fn interpret_token(context: &mut Context, token: Token) {
         }
         TokenType::NumberDeclaration => {
             for variable in context.variables.clone() {
-                if variable.value.str_value == token.data["name"].to_string() {
+                if variable.value.name == token.data["name"].to_string() {
                     fatal("Names must be unique!");
                 }
             }
@@ -134,8 +143,26 @@ fn interpret_token(context: &mut Context, token: Token) {
             context.variables.push(Variable {
                 variable_type: VariableType::Number,
                 value: VariableValue {
-                    str_value: token.data["name"].to_string(),
+                    name: token.data["name"].to_string(),
+                    str_value: String::new(),
                     num_value: token.data["value"].as_str().unwrap().parse().unwrap(),
+                    bool_value: false,
+                    token_vec_value: token.body.clone(),
+                },
+            });
+        }
+        TokenType::StringDeclaration => {
+            for variable in context.variables.clone() {
+                if variable.value.name == token.data["name"].to_string() {
+                    fatal("Names must be unique!");
+                }
+            }
+            context.variables.push(Variable {
+                variable_type: VariableType::String,
+                value: VariableValue {
+                    name: token.data["name"].to_string(),
+                    str_value: token.data["value"].to_string(),
+                    num_value: 0.0,
                     bool_value: false,
                     token_vec_value: token.body.clone(),
                 },

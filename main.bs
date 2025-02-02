@@ -1,7 +1,8 @@
 runnable function main {
     bool bool: true~
     num num: 10.5~
+    str string: Thing!~
     print bool~
     print num~
-    debug str~
+    print string~
 }
