@@ -10,8 +10,12 @@ mod interpreter;
 
 
 fn main() {
-    // TODO: Allow people to run any file (yes i understand that bust needs to make people go insane lol)
-    let mut file = File::open("main.bs").unwrap();
+    let args: Vec<String> = std::env::args().collect();
+    if args.len() != 2 {
+        println!("Usage: buster <file>");
+        return;
+    }
+    let mut file = File::open(&args[1]).unwrap();
     let mut file_contents = String::new();
     file.read_to_string(&mut file_contents).unwrap();
 
